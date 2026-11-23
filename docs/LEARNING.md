@@ -17,6 +17,10 @@ numbers are always labelled SIMULATED.
 7. [TLB and huge pages](#7-tlb-and-huge-pages)
 8. [perf and hardware performance counters](#8-perf-and-hardware-performance-counters)
 9. [Memory bandwidth](#9-memory-bandwidth)
+10. [The health collector and graceful degradation](#10-the-health-collector-and-graceful-degradation)
+11. [ECC: correctable vs uncorrectable errors](#11-ecc-correctable-vs-uncorrectable-errors)
+12. [PCIe link training and downtraining](#12-pcie-link-training-and-downtraining)
+13. [Thermal throttling and DIMM speed](#13-thermal-throttling-and-dimm-speed)
 
 <!-- PHASE2+ sections are appended below as they are built. -->
 
@@ -350,3 +354,109 @@ Why these shapes:
   the Windows host shares the physical cores and changes power states, and
   pinning a *vCPU* doesn't pin a physical core. That is exactly why the fleet
   validator (Phase 4) must be robust to single-measurement glitches.
+
+## 10. The health collector and graceful degradation
+
+`python -m collector.collector --out snap.json [--root PATH] [--with-probe]`
+([`collector/collector.py`](../collector/collector.py)) runs one *reader* per
+subsystem in [`collector/readers/`](../collector/readers/) and assembles one
+JSON **snapshot** in the schema defined in
+[`collector/schema.py`](../collector/schema.py) (`schema_version: 1`).
+
+Two design rules make it safe to run on any Linux box:
+
+1. **Readers never raise.** A missing file, a permission error or a missing
+   tool becomes `{"available": false, "reason": "..."}`. Every reader body is
+   wrapped in `try/except` as a last line of defence. One broken interface
+   should never cost you the rest of the snapshot, the same principle as a
+   production fleet agent.
+2. **`--root` prefixes every path.** `read_text(root, "/sys/...")` reads
+   `<root>/sys/...`, so tests point readers at
+   [`tests/fixtures/fake_sysfs/`](../tests/fixtures/fake_sysfs/), which holds
+   three fake machines: `healthy`, `degraded` and `minimal`. External tools
+   (`dmidecode`, `lsblk`, `smartctl`) only run against the real root.
+
+What the real snapshot of this WSL2 machine looks like
+([`reports/snapshot_e080fed1753e.json`](../reports/snapshot_e080fed1753e.json)):
+platform, cpu, cache, memory, storage and probe are available. **thermal, pcie
+and ecc are unavailable**, each with its reason, because Hyper-V gives the
+guest no temperature sensors, only paravirtual devices and no EDAC driver.
+cpufreq is missing too (the host controls frequency), so the "loaded CPU MHz"
+is `null` rather than a made-up value.
+
+`--with-probe` ([`collector/readers/probe.py`](../collector/readers/probe.py))
+runs quick probes (~15 s) while a background thread samples frequency and
+temperature every 0.5 s. That gives **under-load** values, which is where
+thermal throttling shows (idle readings look fine).
+
+**The hostname is never stored.** `host_id` = first 12 hex characters of
+SHA-256(hostname). Hostnames often encode datacenter, rack or team names.
+
+## 11. ECC: correctable vs uncorrectable errors
+
+ECC memory stores extra check bits (e.g. 8 per 64 data bits) computed with an
+error-correcting code (SECDED: single-error-correct, double-error-detect). On
+every read the memory controller recomputes them:
+
+- **CE (correctable error):** a single flipped bit. The controller fixes it
+  on the fly; software never notices. Linux EDAC counts it in
+  `/sys/devices/system/edac/mc/mc*/ce_count`.
+- **UE (uncorrectable error):** more bits flipped than the code can fix. The
+  data is known-bad. The kernel raises a machine check and kills the process
+  or panics. Counted in `ue_count`.
+
+Why CEs matter for fleet health: an occasional CE is normal (cosmic rays,
+alpha particles). But a CE **rate that keeps rising** on one DIMM points to a
+failing cell, row or chip, and those often progress to UEs. So fleets track
+CE *trends*, and replace parts on a rising trend *before* a UE crashes a job.
+One snapshot can't show a trend, so the collector leaves `ce_daily: null`; the
+fleet simulator provides 14 days of history.
+
+Where: [`collector/readers/ecc.py`](../collector/readers/ecc.py),
+[`fleet/rules.py`](../fleet/rules.py) (Phase 4).
+
+## 12. PCIe link training and downtraining
+
+A PCIe link is a set of **lanes** (x1, x4, x8, x16), each running at the
+**generation**'s rate: Gen3 = 8 GT/s, Gen4 = 16 GT/s, Gen5 = 32 GT/s per lane.
+At power-on the two ends run **link training** (LTSSM): they exchange
+training sequences, equalise the signal on each lane, and settle on the
+highest speed and widest width that work reliably.
+
+If a lane is damaged, the card is badly seated, a riser cable is marginal or a
+connector is dirty, training **falls back** quietly: x16 → x8, or Gen4 → Gen3.
+The device works, just at **half the bandwidth**. A 200 Gb NIC at x8 Gen4
+caps at ~126 Gb/s, which only shows up as a "slow host". The kernel exposes
+both what the link *could* do and what it *did*:
+
+```
+/sys/bus/pci/devices/<bdf>/max_link_speed      16.0 GT/s PCIe
+/sys/bus/pci/devices/<bdf>/current_link_speed  16.0 GT/s PCIe
+/sys/bus/pci/devices/<bdf>/max_link_width      16
+/sys/bus/pci/devices/<bdf>/current_link_width  8      <- downtrained
+```
+
+[`collector/readers/pcie.py`](../collector/readers/pcie.py) sets
+`downtrained: true` when current < max. Caveat: some devices (GPUs) drop
+speed at idle to save power, so production rules whitelist device classes or
+check under load. Our rule only looks at NICs and NVMe drives.
+
+## 13. Thermal throttling and DIMM speed
+
+**Thermal throttling.** A CPU has a maximum safe junction temperature
+(Tjmax, ~100 °C). As it approaches that, the firmware lowers frequency and
+voltage to cut power. A server with a failed fan, clogged heatsink, dried
+thermal paste or blocked airflow runs **hot and slow**: high package
+temperature *and* a loaded frequency well below its siblings. Either signal
+alone is ambiguous (a hot but full-speed host is fine; a slow but cool host
+could be a power-capping policy). Together they're a strong signal. Sources:
+`/sys/class/thermal/thermal_zone*/temp`, `/sys/class/hwmon/*/temp*_input`
+(millidegrees), and cpufreq `scaling_cur_freq`.
+
+**DIMM speed.** DIMMs have a *rated* speed (e.g. DDR4-3200) in their SPD
+chip. The memory controller may run them slower: a BIOS setting, mixed DIMM
+types, too many DIMMs per channel, or memory training falling back after
+errors. `dmidecode -t memory` shows both `Speed` (rated) and `Configured
+Memory Speed`. Running at 2933 instead of 3200 MT/s costs ~8 % bandwidth;
+dropping a full speed bin costs more, and raises latency. The collector flags
+`below_rated_speed` per DIMM ([`collector/readers/memory.py`](../collector/readers/memory.py)).

@@ -1,0 +1,40 @@
+# dmidecode 3.5
+Getting SMBIOS data from sysfs.
+SMBIOS 3.3.0 present.
+
+Handle 0x0040, DMI type 17, 92 bytes
+Memory Device
+	Array Handle: 0x003F
+	Total Width: 72 bits
+	Data Width: 64 bits
+	Size: 32 GB
+	Form Factor: DIMM
+	Locator: DIMM_A1
+	Bank Locator: NODE 1
+	Type: DDR4
+	Speed: 3200 MT/s
+	Manufacturer: Fake Memory Co
+	Configured Memory Speed: 3200 MT/s
+
+Handle 0x0041, DMI type 17, 92 bytes
+Memory Device
+	Array Handle: 0x003F
+	Total Width: 72 bits
+	Data Width: 64 bits
+	Size: 32 GB
+	Form Factor: DIMM
+	Locator: DIMM_B1
+	Bank Locator: NODE 1
+	Type: DDR4
+	Speed: 3200 MT/s
+	Manufacturer: Fake Memory Co
+	Configured Memory Speed: 2933 MT/s
+
+Handle 0x0042, DMI type 17, 92 bytes
+Memory Device
+	Array Handle: 0x003F
+	Size: No Module Installed
+	Form Factor: DIMM
+	Locator: DIMM_C1
+	Type: Unknown
+	Speed: Unknown

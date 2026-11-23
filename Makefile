@@ -39,8 +39,10 @@ perf:
 	$(MAKE) -C probe
 	$(PYTHON) -m scripts.perf_tlb
 
+# Real hardware-health snapshot of this machine (+ quick probes, ~15 s).
 collect:
-	@echo "collect: not implemented yet (phase 3)"
+	$(MAKE) -C probe
+	$(PYTHON) -m collector.collector --out reports/snapshot_$(HOST_ID).json --with-probe
 
 fleet:
 	@echo "fleet: not implemented yet (phase 4)"
