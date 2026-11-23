@@ -215,3 +215,15 @@ Each entry: **decision** — alternatives considered — reason.
 43. **Single-host health report: ±15 % tolerance against the sku-a reference.** — With one
     machine there is no fleet distribution for z-scores. Checks that need missing interfaces are
     reported as "not evaluated" with the reason, never as "pass".
+
+## Phase 5 — shipping
+
+44. **CI uses Python 3.12 and a quick probe** (latency ≤ 16 MB, bandwidth ≤ 64 MB, 2 repeats)
+    written to `reports/ci/`, plus a smaller fleet (100 test hosts, 300 tuning hosts, seeds 2–4).
+    — Keeps CI to a few minutes. The committed canonical results come from the dev machine; CI
+    proves the code builds and runs and that perf degrades gracefully, and uploads `reports/` as
+    an artifact.
+
+45. **Resume bullets use only numbers present in `reports/`** (latency_levels.json,
+    bandwidth_summary.json, perf_tlb.md, evaluation.md). Code-size facts (test counts, reader
+    counts) are left out of the bullets for that reason.
