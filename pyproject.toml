@@ -1,0 +1,16 @@
+[project]
+name = "siliconscope"
+version = "0.1.0"
+description = "Memory-hierarchy probes, a Linux hardware-health collector, and a simulated fleet validator."
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# E/F: pycodestyle + pyflakes, I: import sorting, B: bugbear, UP: modern syntax
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

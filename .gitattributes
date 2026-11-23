@@ -1,0 +1,3 @@
+# Force LF everywhere: the repo is edited on Windows but built/run on Linux (WSL, CI).
+* text=auto eol=lf
+*.png binary
