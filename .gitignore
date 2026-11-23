@@ -14,5 +14,6 @@ reports/*.csv
 !reports/latency_*.csv
 !reports/bandwidth_*.csv
 !reports/fleet_results.csv
+!reports/perf_tlb.csv
 reports/raw/
 reports/ci/

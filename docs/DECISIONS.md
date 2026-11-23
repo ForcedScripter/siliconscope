@@ -50,13 +50,15 @@ Each entry: **decision** — alternatives considered — reason.
    — Alternatives: a ratio threshold between neighbouring sizes (the spec's example), or
    k-means on latency. — On this VM the L3 region ramps smoothly from 11 → 80 ns, so a neighbour
    ratio threshold fires at almost every point. The DP fit finds the staircase globally.
-   `MIN_GAIN = 0.35` was chosen by looking at the one real sweep: it yields 6 plateaus, whose L1/L2
-   boundaries match sysfs.
+   `MIN_GAIN = 0.35` was chosen by looking at the first real sweep (6 plateaus); on the canonical
+   sweep it yields 5 plateaus, and all of the L1/L2/L3 knees fall within half an octave of the
+   sysfs sizes.
 
-10. **Plateaus are named by the reported cache that holds their *first* size**; repeated names
-    get `#2`, `#3`. — Alternative: name by their last size. — A plateau starts right after the
-    previous level overflows, so its start identifies the serving cache. Naming by the last size
-    mislabelled the 6–16 MB plateau as "DRAM".
+10. **Plateaus are named by the reported cache that strictly holds their *first* size**
+    (`first_size < cache_size`); repeated names get `#2`, `#3`. — Alternative: name by their last
+    size. — A plateau starts right after the previous level overflows, so its start identifies the
+    serving cache. Naming by the last size mislabelled a 6–16 MB plateau as "DRAM". The comparison
+    is strict because a working set equal to the cache can't fit alongside everything else.
 
 11. **The probe summary (L1/L2/L3/DRAM ns) uses the first plateau carrying each name**,
     falling back to "latency at half the cache size". — Alternative: always sample at half the
@@ -70,3 +72,33 @@ Each entry: **decision** — alternatives considered — reason.
 13. **`scripts/` is a Python package (`python -m scripts.plot_latency`).**
     — Alternative: standalone scripts that edit `sys.path`. — Plain imports of `collector.*` and a
     shared `scripts/plotstyle.py`, with no path hacks.
+
+## Phase 2 — bandwidth, prefetcher, TLB, perf
+
+14. **The read kernel uses 8 independent accumulators.** — Alternatives: a single `sum +=`, or
+    `-O3 -march=native` auto-vectorisation. — A single accumulator is a serial dependency chain
+    (it measured ~16 GB/s in L1, i.e. the adder). Explicit accumulators keep `-O2` as the spec
+    requires and are easy to explain.
+
+15. **Bandwidth memory budget = min(1 GB, ½ MemAvailable) in total, across all threads and
+    buffers.** — Alternative: a 1 GB buffer per op as the spec literally says. — The spec also asks
+    to stay under ~1 GB, so copy (2 buffers) stops at 512 MB, and 4 threads stop at 256 MB each.
+    The DRAM figure uses sizes ≥ 4× L3 (≥ 32 MB), which the budget always covers.
+
+16. **Multi-thread runs place threads one per physical core first** (from sysfs `core_id`).
+    — Alternative: CPUs 0..N-1. — vCPUs 0 and 1 are SMT siblings here (`shared_cpu_list=0-1`), so
+    CPUs 0–3 means only 2 cores, and we would be measuring shared-L1 contention, not scaling.
+
+17. **`run_perf.sh` falls back to any versioned perf in `/usr/lib/linux-tools/*/perf`.**
+    — Alternative: require a matching `linux-tools-$(uname -r)`. — WSL/cloud kernels never have a
+    matching package, but a newer perf binary works fine with an older kernel's perf_event ABI.
+
+18. **The TLB experiment normalises counters per pointer-chase hop and compares 4 KiB vs 2 MiB
+    pages at identical sizes.** — Alternative: count only the timed loop (perf `--control` or
+    libpfm inside the probe). — Wrapping the whole process is simpler. Setup overhead is identical
+    for both page sizes, so the *comparison* is still valid.
+
+19. **Canonical bandwidth numbers come from a re-run; the degraded run is kept in
+    `reports/glitch/`.** — Alternative: silently keep the first run, or silently replace it. — The
+    first run in `make probe` was 3–4× slower in-cache, then two immediate re-runs agreed with each
+    other. Keeping both is honest, and makes a useful example of a single-measurement glitch.

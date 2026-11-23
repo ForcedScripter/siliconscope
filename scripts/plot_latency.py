@@ -103,7 +103,9 @@ def _name_level(first_size: int, reported: dict[str, int]) -> str:
     (replacement policy and sharing make capacity edges soft).
     """
     for name in ("L1", "L2", "L3"):
-        if name in reported and first_size <= reported[name]:
+        # Strict "<": a working set as big as the cache can't be served by it alone
+        # (other data — page tables, the OS, the other cores — also lives there).
+        if name in reported and first_size < reported[name]:
             return name
     return "DRAM" if reported else "unknown"
 
@@ -258,6 +260,49 @@ def plot(df: pd.DataFrame, reported: dict[str, int], result: dict[str, Any], out
     plt.close(fig)
 
 
+def plot_compare(runs: list[tuple[str, pd.DataFrame]], reported: dict[str, int], out_png: Path,
+                 title: str) -> None:
+    """Overlay several latency sweeps (e.g. 4 KiB vs huge pages vs sequential)."""
+    import matplotlib.pyplot as plt
+
+    from scripts import plotstyle
+
+    plotstyle.apply()
+    fig, ax = plt.subplots(figsize=(9, 5))
+    for i, (label, df) in enumerate(runs):
+        color = plotstyle.SERIES[i]
+        ax.fill_between(df["size_bytes"], df["ns_p10"], df["ns_p90"], color=color, alpha=0.12,
+                        linewidth=0)
+        ax.plot(df["size_bytes"], df["ns_median"], color=color, marker="o", markersize=3.5,
+                label=label)
+    for name, size in reported.items():
+        ax.axvline(size, color=plotstyle.TEXT_SECONDARY, linestyle="--", linewidth=1)
+        ax.annotate(f"{name} {_fmt_size(size)}", (size, 1), xycoords=("data", "axes fraction"),
+                    xytext=(3, -12), textcoords="offset points", fontsize=8,
+                    color=plotstyle.TEXT_SECONDARY)
+    x = runs[0][1]["size_bytes"]
+    ax.set_xscale("log", base=2)
+    ax.set_yscale("log")
+    ticks = [2 ** p for p in range(int(math.log2(x.min())), int(math.log2(x.max())) + 1, 2)]
+    ax.set_xticks(ticks)
+    ax.set_xticklabels([_fmt_size(t) for t in ticks])
+    ax.set_xlabel("working-set size (log2)")
+    ax.set_ylabel("ns per dependent load (log)")
+    ax.set_title(title, loc="left")
+    ax.legend(loc="upper left")
+    fig.savefig(out_png)
+    plt.close(fig)
+
+
+def comparison_table(runs: list[tuple[str, pd.DataFrame]]) -> list[dict[str, Any]]:
+    """Median ns per size for every run side by side (sizes common to all runs)."""
+    merged = runs[0][1][["size_bytes", "ns_median"]].rename(columns={"ns_median": runs[0][0]})
+    for label, df in runs[1:]:
+        merged = merged.merge(
+            df[["size_bytes", "ns_median"]].rename(columns={"ns_median": label}), on="size_bytes")
+    return merged.round(3).to_dict(orient="records")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("csv", type=Path)
@@ -265,6 +310,8 @@ def main() -> None:
     ap.add_argument("--root", default="/", help="filesystem root for reading cache sysfs")
     ap.add_argument("--levels-name", default="latency_levels.json")
     ap.add_argument("--title", default=None)
+    ap.add_argument("--compare", nargs="*", default=[], metavar="CSV:LABEL",
+                    help="extra sweeps to overlay, e.g. reports/latency_hugepages_x.csv:'huge'")
     args = ap.parse_args()
 
     df = pd.read_csv(args.csv)
@@ -276,7 +323,24 @@ def main() -> None:
     result["summary"] = summarize(df, reported)
     result["source_csv"] = str(args.csv.as_posix())
 
+    # Optional comparison runs: detect their plateaus too, and tabulate side by side.
+    runs = [("random, 4 KiB pages", df)]
+    result["comparisons"] = {}
+    for spec in args.compare:
+        path, _, label = spec.partition(":")
+        cdf = pd.read_csv(path)
+        runs.append((label or Path(path).stem, cdf))
+        result["comparisons"][label or Path(path).stem] = {
+            "source_csv": path,
+            "levels": detect_levels(cdf, reported)["levels"],
+        }
+    if len(runs) > 1:
+        result["comparison_ns_median"] = comparison_table(runs)
+
     args.out_dir.mkdir(parents=True, exist_ok=True)
+    if len(runs) > 1:
+        plot_compare(runs, reported, args.out_dir / f"latency_compare_{host_id()}.png",
+                     f"Latency: page size and access pattern — host {host_id()}")
     (args.out_dir / args.levels_name).write_text(json.dumps(result, indent=2) + "\n")
     png = args.out_dir / f"{args.csv.stem}.png"
     if args.csv.stem == "latency" or not args.csv.stem.startswith("latency_"):

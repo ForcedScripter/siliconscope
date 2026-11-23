@@ -10,6 +10,14 @@
 //
 // Usage:
 //   latency [--max-mb 256] [--min-kb 4] [--repeats 5] [--cpu 0] [--seed 42]
+//           [--pattern random|sequential] [--hugepages]
+//
+//   --pattern sequential  links node i -> i+1. Loads are still dependent, but
+//                         the addresses are predictable, so the hardware
+//                         prefetcher fetches ahead and hides most latency.
+//   --hugepages           madvise(MADV_HUGEPAGE): back the buffer with 2 MiB
+//                         pages so the TLB covers 512x more memory. Used to
+//                         test whether a latency step is caused by TLB misses.
 // Output (stdout, CSV):
 //   size_bytes,ns_median,ns_p10,ns_p90
 #include <cstdint>
@@ -50,6 +58,26 @@ std::vector<uint32_t> sattolo_cycle(size_t n, std::mt19937_64& rng) {
     return a;  // a[i] = index of the node that follows node i
 }
 
+// Sequential order: 0 -> 1 -> ... -> n-1 -> 0. Still one cycle, but trivially
+// predictable — the control experiment for the prefetcher.
+std::vector<uint32_t> sequential_cycle(size_t n) {
+    std::vector<uint32_t> a(n);
+    for (size_t i = 0; i < n; ++i) a[i] = static_cast<uint32_t>((i + 1) % n);
+    return a;
+}
+
+// Read AnonHugePages (kB) for this process from /proc/self/smaps_rollup: the
+// amount of anonymous memory actually backed by transparent huge pages. This is
+// how we *verify* that madvise(MADV_HUGEPAGE) was honoured.
+long anon_hugepages_kb() {
+    std::ifstream f("/proc/self/smaps_rollup");
+    std::string line;
+    while (std::getline(f, line)) {
+        if (line.rfind("AnonHugePages:", 0) == 0) return std::stol(line.substr(14));
+    }
+    return -1;
+}
+
 // Link the first n nodes of `nodes` in the order given by `next_index`.
 void link_nodes(Node* nodes, const std::vector<uint32_t>& next_index) {
     for (size_t i = 0; i < next_index.size(); ++i) nodes[i].next = &nodes[next_index[i]];
@@ -84,12 +112,18 @@ int main(int argc, char** argv) {
     const int repeats = static_cast<int>(args.num("repeats", 5));
     const int cpu = static_cast<int>(args.num("cpu", 0));
     std::mt19937_64 rng(static_cast<uint64_t>(args.num("seed", 42)));
+    const std::string pattern = args.str("pattern", "random");
+    const bool hugepages = args.has("hugepages");
+    if (pattern != "random" && pattern != "sequential") {
+        std::fprintf(stderr, "error: --pattern must be random or sequential\n");
+        return 2;
+    }
 
     ss::pin_to_cpu(cpu);
     const size_t max_bytes = ss::cap_to_available(max_bytes_req);
 
     // One buffer sized for the largest working set; smaller sets use a prefix.
-    auto* nodes = static_cast<Node*>(ss::alloc_buffer(max_bytes, /*hugepages=*/false));
+    auto* nodes = static_cast<Node*>(ss::alloc_buffer(max_bytes, hugepages));
     if (!nodes) {
         std::fprintf(stderr, "error: failed to allocate %zu MB\n", max_bytes >> 20);
         return 1;
@@ -98,7 +132,7 @@ int main(int argc, char** argv) {
     std::printf("size_bytes,ns_median,ns_p10,ns_p90\n");
     for (size_t size : make_sizes(min_bytes, max_bytes)) {
         const size_t n = size / ss::kCacheLine;
-        link_nodes(nodes, sattolo_cycle(n, rng));
+        link_nodes(nodes, pattern == "random" ? sattolo_cycle(n, rng) : sequential_cycle(n));
 
         // Enough hops that each sample takes milliseconds (timer noise ~0), but
         // at least one full lap so every line in the set is exercised.
@@ -121,6 +155,9 @@ int main(int argc, char** argv) {
                     ss::percentile(ns_per_access, 0.1), ss::percentile(ns_per_access, 0.9));
         std::fflush(stdout);
     }
+    // Report to stderr (keeps stdout pure CSV) how much memory THP really backed.
+    std::fprintf(stderr, "info: pattern=%s hugepages_requested=%d AnonHugePages=%ld kB\n",
+                 pattern.c_str(), hugepages ? 1 : 0, anon_hugepages_kb());
     free(nodes);
     return 0;
 }

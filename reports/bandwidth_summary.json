@@ -1,0 +1,77 @@
+{
+  "threads_1": {
+    "copy": {
+      "peak_gbps": 43.4,
+      "peak_at_bytes": 65536,
+      "dram_gbps": 12.97,
+      "dram_sizes_used": [
+        33554432,
+        67108864,
+        134217728,
+        268435456,
+        536870912
+      ]
+    },
+    "read": {
+      "peak_gbps": 72.34,
+      "peak_at_bytes": 32768,
+      "dram_gbps": 13.73,
+      "dram_sizes_used": [
+        33554432,
+        67108864,
+        134217728,
+        268435456,
+        536870912,
+        1073741824
+      ]
+    },
+    "write": {
+      "peak_gbps": 40.62,
+      "peak_at_bytes": 32768,
+      "dram_gbps": 8.75,
+      "dram_sizes_used": [
+        33554432,
+        67108864,
+        134217728,
+        268435456,
+        536870912,
+        1073741824
+      ]
+    }
+  },
+  "threads_4": {
+    "copy": {
+      "peak_gbps": 103.59,
+      "peak_at_bytes": 32768,
+      "dram_gbps": 15.12,
+      "dram_sizes_used": [
+        33554432,
+        67108864,
+        134217728
+      ]
+    },
+    "read": {
+      "peak_gbps": 206.16,
+      "peak_at_bytes": 16384,
+      "dram_gbps": 34.27,
+      "dram_sizes_used": [
+        33554432,
+        67108864,
+        134217728,
+        268435456
+      ]
+    },
+    "write": {
+      "peak_gbps": 108.08,
+      "peak_at_bytes": 16384,
+      "dram_gbps": 9.49,
+      "dram_sizes_used": [
+        33554432,
+        67108864,
+        134217728,
+        268435456
+      ]
+    }
+  },
+  "source_csv": "reports/bandwidth_e080fed1753e.csv"
+}

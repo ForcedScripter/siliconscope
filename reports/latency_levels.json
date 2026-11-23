@@ -4,76 +4,63 @@
       "name": "L1",
       "min_size_bytes": 4096,
       "max_size_bytes": 49152,
-      "ns_median": 1.346,
-      "ns_p10": 1.292,
+      "ns_median": 1.302,
+      "ns_p10": 1.229,
       "n_points": 8
     },
     {
       "name": "L2",
       "min_size_bytes": 65536,
       "max_size_bytes": 1048576,
-      "ns_median": 3.788,
-      "ns_p10": 3.607,
+      "ns_median": 4.744,
+      "ns_p10": 4.465,
       "n_points": 9
     },
     {
       "name": "L3",
       "min_size_bytes": 1572864,
-      "max_size_bytes": 2097152,
-      "ns_median": 12.126,
-      "ns_p10": 11.844,
-      "n_points": 2
+      "max_size_bytes": 3145728,
+      "ns_median": 14.05,
+      "ns_p10": 12.813,
+      "n_points": 3
     },
     {
       "name": "L3#2",
-      "min_size_bytes": 3145728,
-      "max_size_bytes": 4194304,
-      "ns_median": 28.492,
-      "ns_p10": 23.878,
+      "min_size_bytes": 4194304,
+      "max_size_bytes": 6291456,
+      "ns_median": 42.485,
+      "ns_p10": 33.859,
       "n_points": 2
     },
     {
-      "name": "L3#3",
-      "min_size_bytes": 6291456,
-      "max_size_bytes": 16777216,
-      "ns_median": 80.881,
-      "ns_p10": 75.1,
-      "n_points": 4
-    },
-    {
       "name": "DRAM",
-      "min_size_bytes": 25165824,
+      "min_size_bytes": 8388608,
       "max_size_bytes": 268435456,
-      "ns_median": 127.403,
-      "ns_p10": 112.937,
-      "n_points": 8
+      "ns_median": 94.052,
+      "ns_p10": 92.674,
+      "n_points": 11
     }
   ],
   "knees": [
     {
       "before_bytes": 49152,
       "after_bytes": 65536,
-      "ratio_p10": 2.971
+      "ratio_p10": 2.838
     },
     {
       "before_bytes": 1048576,
       "after_bytes": 1572864,
-      "ratio_p10": 1.916
+      "ratio_p10": 1.8
     },
     {
-      "before_bytes": 2097152,
-      "after_bytes": 3145728,
-      "ratio_p10": 1.755
+      "before_bytes": 3145728,
+      "after_bytes": 4194304,
+      "ratio_p10": 1.493
     },
     {
-      "before_bytes": 4194304,
-      "after_bytes": 6291456,
-      "ratio_p10": 1.977
-    },
-    {
-      "before_bytes": 16777216,
-      "after_bytes": 25165824,
-      "ratio_p10": 1.072
+      "before_bytes": 6291456,
+      "after_bytes": 8388608,
+      "ratio_p10": 1.556
     }
   ],
   "reported_cache_bytes": {
@@ -87,7 +74,7 @@
       "nearest_knee": {
         "before_bytes": 49152,
         "after_bytes": 65536,
-        "ratio_p10": 2.971
+        "ratio_p10": 2.838
       },
       "octaves_away": 0.208,
       "matches": true
@@ -97,7 +84,7 @@
       "nearest_knee": {
         "before_bytes": 1048576,
         "after_bytes": 1572864,
-        "ratio_p10": 1.916
+        "ratio_p10": 1.8
       },
       "octaves_away": 0.029,
       "matches": true
@@ -105,19 +92,303 @@
     "L3": {
       "reported_bytes": 8388608,
       "nearest_knee": {
-        "before_bytes": 4194304,
-        "after_bytes": 6291456,
-        "ratio_p10": 1.977
+        "before_bytes": 6291456,
+        "after_bytes": 8388608,
+        "ratio_p10": 1.556
       },
-      "octaves_away": 0.708,
-      "matches": false
+      "octaves_away": 0.208,
+      "matches": true
     }
   },
   "summary": {
-    "l1_ns": 1.346,
-    "l2_ns": 3.788,
-    "l3_ns": 12.126,
-    "dram_ns": 127.403
+    "l1_ns": 1.302,
+    "l2_ns": 4.744,
+    "l3_ns": 14.05,
+    "dram_ns": 94.052
   },
-  "source_csv": "reports/latency_e080fed1753e.csv"
+  "source_csv": "reports/latency_e080fed1753e.csv",
+  "comparisons": {
+    "random, 2 MiB huge pages": {
+      "source_csv": "reports/latency_hugepages_e080fed1753e.csv",
+      "levels": [
+        {
+          "name": "L1",
+          "min_size_bytes": 4096,
+          "max_size_bytes": 49152,
+          "ns_median": 1.389,
+          "ns_p10": 1.353,
+          "n_points": 8
+        },
+        {
+          "name": "L2",
+          "min_size_bytes": 65536,
+          "max_size_bytes": 1048576,
+          "ns_median": 4.146,
+          "ns_p10": 4.059,
+          "n_points": 9
+        },
+        {
+          "name": "L3",
+          "min_size_bytes": 1572864,
+          "max_size_bytes": 2097152,
+          "ns_median": 12.925,
+          "ns_p10": 11.643,
+          "n_points": 2
+        },
+        {
+          "name": "L3#2",
+          "min_size_bytes": 3145728,
+          "max_size_bytes": 4194304,
+          "ns_median": 28.65,
+          "ns_p10": 24.228,
+          "n_points": 2
+        },
+        {
+          "name": "L3#3",
+          "min_size_bytes": 6291456,
+          "max_size_bytes": 268435456,
+          "ns_median": 94.344,
+          "ns_p10": 92.879,
+          "n_points": 12
+        }
+      ]
+    },
+    "sequential (prefetcher on)": {
+      "source_csv": "reports/latency_sequential_e080fed1753e.csv",
+      "levels": [
+        {
+          "name": "L1",
+          "min_size_bytes": 4096,
+          "max_size_bytes": 49152,
+          "ns_median": 1.343,
+          "ns_p10": 1.306,
+          "n_points": 8
+        },
+        {
+          "name": "L2",
+          "min_size_bytes": 65536,
+          "max_size_bytes": 4194304,
+          "ns_median": 2.053,
+          "ns_p10": 1.923,
+          "n_points": 13
+        },
+        {
+          "name": "L3",
+          "min_size_bytes": 6291456,
+          "max_size_bytes": 8388608,
+          "ns_median": 4.415,
+          "ns_p10": 3.874,
+          "n_points": 2
+        },
+        {
+          "name": "DRAM",
+          "min_size_bytes": 12582912,
+          "max_size_bytes": 268435456,
+          "ns_median": 5.803,
+          "ns_p10": 5.59,
+          "n_points": 10
+        }
+      ]
+    }
+  },
+  "comparison_ns_median": [
+    {
+      "size_bytes": 4096,
+      "random, 4 KiB pages": 1.426,
+      "random, 2 MiB huge pages": 1.467,
+      "sequential (prefetcher on)": 1.311
+    },
+    {
+      "size_bytes": 6144,
+      "random, 4 KiB pages": 1.361,
+      "random, 2 MiB huge pages": 1.393,
+      "sequential (prefetcher on)": 1.351
+    },
+    {
+      "size_bytes": 8192,
+      "random, 4 KiB pages": 1.356,
+      "random, 2 MiB huge pages": 1.342,
+      "sequential (prefetcher on)": 1.369
+    },
+    {
+      "size_bytes": 12288,
+      "random, 4 KiB pages": 1.278,
+      "random, 2 MiB huge pages": 1.384,
+      "sequential (prefetcher on)": 1.339
+    },
+    {
+      "size_bytes": 16384,
+      "random, 4 KiB pages": 1.266,
+      "random, 2 MiB huge pages": 1.379,
+      "sequential (prefetcher on)": 1.293
+    },
+    {
+      "size_bytes": 24576,
+      "random, 4 KiB pages": 1.236,
+      "random, 2 MiB huge pages": 1.364,
+      "sequential (prefetcher on)": 1.347
+    },
+    {
+      "size_bytes": 32768,
+      "random, 4 KiB pages": 1.326,
+      "random, 2 MiB huge pages": 1.488,
+      "sequential (prefetcher on)": 1.412
+    },
+    {
+      "size_bytes": 49152,
+      "random, 4 KiB pages": 1.265,
+      "random, 2 MiB huge pages": 2.321,
+      "sequential (prefetcher on)": 1.322
+    },
+    {
+      "size_bytes": 65536,
+      "random, 4 KiB pages": 3.556,
+      "random, 2 MiB huge pages": 5.102,
+      "sequential (prefetcher on)": 1.932
+    },
+    {
+      "size_bytes": 98304,
+      "random, 4 KiB pages": 3.589,
+      "random, 2 MiB huge pages": 3.952,
+      "sequential (prefetcher on)": 2.053
+    },
+    {
+      "size_bytes": 131072,
+      "random, 4 KiB pages": 4.098,
+      "random, 2 MiB huge pages": 4.057,
+      "sequential (prefetcher on)": 1.965
+    },
+    {
+      "size_bytes": 196608,
+      "random, 4 KiB pages": 4.773,
+      "random, 2 MiB huge pages": 3.982,
+      "sequential (prefetcher on)": 1.951
+    },
+    {
+      "size_bytes": 262144,
+      "random, 4 KiB pages": 4.744,
+      "random, 2 MiB huge pages": 3.689,
+      "sequential (prefetcher on)": 1.903
+    },
+    {
+      "size_bytes": 393216,
+      "random, 4 KiB pages": 4.683,
+      "random, 2 MiB huge pages": 4.146,
+      "sequential (prefetcher on)": 2.111
+    },
+    {
+      "size_bytes": 524288,
+      "random, 4 KiB pages": 5.019,
+      "random, 2 MiB huge pages": 4.718,
+      "sequential (prefetcher on)": 2.006
+    },
+    {
+      "size_bytes": 786432,
+      "random, 4 KiB pages": 5.594,
+      "random, 2 MiB huge pages": 5.108,
+      "sequential (prefetcher on)": 1.951
+    },
+    {
+      "size_bytes": 1048576,
+      "random, 4 KiB pages": 5.985,
+      "random, 2 MiB huge pages": 5.268,
+      "sequential (prefetcher on)": 2.079
+    },
+    {
+      "size_bytes": 1572864,
+      "random, 4 KiB pages": 11.038,
+      "random, 2 MiB huge pages": 10.994,
+      "sequential (prefetcher on)": 2.161
+    },
+    {
+      "size_bytes": 2097152,
+      "random, 4 KiB pages": 14.05,
+      "random, 2 MiB huge pages": 14.855,
+      "sequential (prefetcher on)": 2.304
+    },
+    {
+      "size_bytes": 3145728,
+      "random, 4 KiB pages": 18.531,
+      "random, 2 MiB huge pages": 19.658,
+      "sequential (prefetcher on)": 2.441
+    },
+    {
+      "size_bytes": 4194304,
+      "random, 4 KiB pages": 31.593,
+      "random, 2 MiB huge pages": 37.642,
+      "sequential (prefetcher on)": 3.02
+    },
+    {
+      "size_bytes": 6291456,
+      "random, 4 KiB pages": 53.377,
+      "random, 2 MiB huge pages": 103.646,
+      "sequential (prefetcher on)": 3.858
+    },
+    {
+      "size_bytes": 8388608,
+      "random, 4 KiB pages": 71.126,
+      "random, 2 MiB huge pages": 70.381,
+      "sequential (prefetcher on)": 4.973
+    },
+    {
+      "size_bytes": 12582912,
+      "random, 4 KiB pages": 81.658,
+      "random, 2 MiB huge pages": 85.19,
+      "sequential (prefetcher on)": 5.659
+    },
+    {
+      "size_bytes": 16777216,
+      "random, 4 KiB pages": 87.097,
+      "random, 2 MiB huge pages": 87.927,
+      "sequential (prefetcher on)": 5.752
+    },
+    {
+      "size_bytes": 25165824,
+      "random, 4 KiB pages": 92.138,
+      "random, 2 MiB huge pages": 90.355,
+      "sequential (prefetcher on)": 5.767
+    },
+    {
+      "size_bytes": 33554432,
+      "random, 4 KiB pages": 92.847,
+      "random, 2 MiB huge pages": 93.403,
+      "sequential (prefetcher on)": 5.401
+    },
+    {
+      "size_bytes": 50331648,
+      "random, 4 KiB pages": 94.052,
+      "random, 2 MiB huge pages": 94.279,
+      "sequential (prefetcher on)": 5.561
+    },
+    {
+      "size_bytes": 67108864,
+      "random, 4 KiB pages": 95.492,
+      "random, 2 MiB huge pages": 97.263,
+      "sequential (prefetcher on)": 5.839
+    },
+    {
+      "size_bytes": 100663296,
+      "random, 4 KiB pages": 100.51,
+      "random, 2 MiB huge pages": 96.499,
+      "sequential (prefetcher on)": 7.387
+    },
+    {
+      "size_bytes": 134217728,
+      "random, 4 KiB pages": 105.102,
+      "random, 2 MiB huge pages": 94.41,
+      "sequential (prefetcher on)": 7.375
+    },
+    {
+      "size_bytes": 201326592,
+      "random, 4 KiB pages": 112.154,
+      "random, 2 MiB huge pages": 109.006,
+      "sequential (prefetcher on)": 8.4
+    },
+    {
+      "size_bytes": 268435456,
+      "random, 4 KiB pages": 139.479,
+      "random, 2 MiB huge pages": 101.214,
+      "sequential (prefetcher on)": 5.973
+    }
+  ]
 }

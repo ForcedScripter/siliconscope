@@ -6,16 +6,38 @@ HOST_ID := $(shell printf '%s' "$$(hostname)" | sha256sum | cut -c1-12)
 MAX_MB  ?= 256
 REPEATS ?= 5
 
-.PHONY: all probe collect fleet evaluate report test lint clean
+.PHONY: all probe perf collect fleet evaluate report test lint clean
 
 all: probe collect fleet evaluate report
 
-# Build the C++ probes, run the latency sweep, plot it and detect cache levels.
+BW_MAX_MB ?= 1024
+THREADS   ?= 4
+LAT       := ./probe/build/latency --max-mb $(MAX_MB) --repeats $(REPEATS)
+BW        := ./probe/build/bandwidth --max-mb $(BW_MAX_MB) --repeats $(REPEATS)
+
+# Build the C++ probes and run every memory experiment on this machine:
+#   latency (random, 4 KiB pages)  -> cache levels       [phase 1]
+#   latency (random, huge pages)   -> TLB hypothesis      [phase 2]
+#   latency (sequential)           -> prefetcher effect   [phase 2]
+#   bandwidth (1 and N threads)    -> GB/s per level      [phase 2]
 probe:
 	$(MAKE) -C probe
 	mkdir -p reports
-	./probe/build/latency --max-mb $(MAX_MB) --repeats $(REPEATS) > reports/latency_$(HOST_ID).csv
-	$(PYTHON) -m scripts.plot_latency reports/latency_$(HOST_ID).csv
+	$(LAT) > reports/latency_$(HOST_ID).csv
+	$(LAT) --hugepages > reports/latency_hugepages_$(HOST_ID).csv
+	$(LAT) --pattern sequential > reports/latency_sequential_$(HOST_ID).csv
+	$(BW) --threads 1 > reports/bandwidth_$(HOST_ID).csv
+	$(BW) --threads $(THREADS) | tail -n +2 >> reports/bandwidth_$(HOST_ID).csv
+	$(PYTHON) -m scripts.plot_latency reports/latency_$(HOST_ID).csv \
+		--compare reports/latency_hugepages_$(HOST_ID).csv:"random, 2 MiB huge pages" \
+		          reports/latency_sequential_$(HOST_ID).csv:"sequential (prefetcher on)"
+	$(PYTHON) -m scripts.plot_bandwidth reports/bandwidth_$(HOST_ID).csv
+
+# TLB experiment: perf counters at fixed sizes, 4 KiB vs 2 MiB pages.
+# Exits cleanly (with an explanatory note) if perf counters aren't available.
+perf:
+	$(MAKE) -C probe
+	$(PYTHON) -m scripts.perf_tlb
 
 collect:
 	@echo "collect: not implemented yet (phase 3)"

@@ -7,6 +7,7 @@
 #include <sched.h>
 #include <stdlib.h>
 #include <sys/mman.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <chrono>
@@ -85,6 +86,35 @@ inline bool pin_to_cpu(int cpu) {
         return false;
     }
     return true;
+}
+
+// Logical CPUs ordered so that each *physical core* appears once before any SMT
+// sibling: e.g. on a 4-core/8-thread part where cpu0/cpu1 share a core, the
+// order is 0,2,4,6,1,3,5,7. Multi-thread runs use this so 4 threads land on 4
+// cores; naively pinning to cpus 0-3 would put them on 2 cores, sharing L1/L2.
+// Falls back to 0..n-1 if sysfs topology is missing.
+inline std::vector<int> cpus_one_per_core_first() {
+    const int n = static_cast<int>(sysconf(_SC_NPROCESSORS_ONLN));
+    std::vector<int> first, siblings;
+    std::vector<std::pair<std::string, std::string>> seen;  // (package, core)
+    for (int c = 0; c < n; ++c) {
+        std::string base = "/sys/devices/system/cpu/cpu" + std::to_string(c) + "/topology/";
+        std::ifstream pkg_f(base + "physical_package_id"), core_f(base + "core_id");
+        std::string pkg, core;
+        if (!(pkg_f >> pkg) || !(core_f >> core)) {
+            pkg = "?";
+            core = std::to_string(c);  // unknown topology: treat each CPU as its own core
+        }
+        auto key = std::make_pair(pkg, core);
+        if (std::find(seen.begin(), seen.end(), key) == seen.end()) {
+            seen.push_back(key);
+            first.push_back(c);
+        } else {
+            siblings.push_back(c);
+        }
+    }
+    first.insert(first.end(), siblings.begin(), siblings.end());
+    return first;
 }
 
 // ---------------------------------------------------------------------------

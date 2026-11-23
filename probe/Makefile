@@ -4,7 +4,7 @@ CXXFLAGS ?= -O2 -std=c++17 -Wall -Wextra -pthread
 BUILD    := build
 
 .PHONY: all clean
-all: $(BUILD)/latency
+all: $(BUILD)/latency $(BUILD)/bandwidth
 
 $(BUILD)/%: %.cpp common.hpp | $(BUILD)
 	$(CXX) $(CXXFLAGS) -o $@ $<
