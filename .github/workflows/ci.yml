@@ -1,0 +1,52 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build probes (g++ -O2, plain make)
+        run: make -C probe
+
+      - name: Quick probe run (small sizes, few repeats)
+        run: |
+          mkdir -p reports/ci
+          ./probe/build/latency --max-mb 16 --repeats 2 > reports/ci/latency.csv
+          ./probe/build/bandwidth --max-mb 64 --repeats 2 > reports/ci/bandwidth.csv
+          python -m scripts.plot_latency reports/ci/latency.csv --out-dir reports/ci
+          python -m scripts.plot_bandwidth reports/ci/bandwidth.csv --out-dir reports/ci
+          # perf is usually not permitted on hosted runners: the wrapper must explain and exit 0.
+          scripts/run_perf.sh --out reports/ci/perf.txt -- ./probe/build/latency --max-mb 1 --repeats 1
+
+      - name: Lint (ruff)
+        run: python -m ruff check .
+
+      - name: Tests (pytest)
+        run: python -m pytest -q
+
+      - name: Collect a snapshot of the CI runner (VM, no special hardware)
+        run: python -m collector.collector --out reports/ci/snapshot.json
+
+      - name: Small SIMULATED fleet + evaluation
+        run: make fleet evaluate FLEET_N=100 TUNE_N=300 TEST_SEEDS="2 3 4"
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: reports/
