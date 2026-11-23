@@ -1,0 +1,123 @@
+{
+  "levels": [
+    {
+      "name": "L1",
+      "min_size_bytes": 4096,
+      "max_size_bytes": 49152,
+      "ns_median": 1.346,
+      "ns_p10": 1.292,
+      "n_points": 8
+    },
+    {
+      "name": "L2",
+      "min_size_bytes": 65536,
+      "max_size_bytes": 1048576,
+      "ns_median": 3.788,
+      "ns_p10": 3.607,
+      "n_points": 9
+    },
+    {
+      "name": "L3",
+      "min_size_bytes": 1572864,
+      "max_size_bytes": 2097152,
+      "ns_median": 12.126,
+      "ns_p10": 11.844,
+      "n_points": 2
+    },
+    {
+      "name": "L3#2",
+      "min_size_bytes": 3145728,
+      "max_size_bytes": 4194304,
+      "ns_median": 28.492,
+      "ns_p10": 23.878,
+      "n_points": 2
+    },
+    {
+      "name": "L3#3",
+      "min_size_bytes": 6291456,
+      "max_size_bytes": 16777216,
+      "ns_median": 80.881,
+      "ns_p10": 75.1,
+      "n_points": 4
+    },
+    {
+      "name": "DRAM",
+      "min_size_bytes": 25165824,
+      "max_size_bytes": 268435456,
+      "ns_median": 127.403,
+      "ns_p10": 112.937,
+      "n_points": 8
+    }
+  ],
+  "knees": [
+    {
+      "before_bytes": 49152,
+      "after_bytes": 65536,
+      "ratio_p10": 2.971
+    },
+    {
+      "before_bytes": 1048576,
+      "after_bytes": 1572864,
+      "ratio_p10": 1.916
+    },
+    {
+      "before_bytes": 2097152,
+      "after_bytes": 3145728,
+      "ratio_p10": 1.755
+    },
+    {
+      "before_bytes": 4194304,
+      "after_bytes": 6291456,
+      "ratio_p10": 1.977
+    },
+    {
+      "before_bytes": 16777216,
+      "after_bytes": 25165824,
+      "ratio_p10": 1.072
+    }
+  ],
+  "reported_cache_bytes": {
+    "L1": 49152,
+    "L2": 1310720,
+    "L3": 8388608
+  },
+  "knee_match": {
+    "L1": {
+      "reported_bytes": 49152,
+      "nearest_knee": {
+        "before_bytes": 49152,
+        "after_bytes": 65536,
+        "ratio_p10": 2.971
+      },
+      "octaves_away": 0.208,
+      "matches": true
+    },
+    "L2": {
+      "reported_bytes": 1310720,
+      "nearest_knee": {
+        "before_bytes": 1048576,
+        "after_bytes": 1572864,
+        "ratio_p10": 1.916
+      },
+      "octaves_away": 0.029,
+      "matches": true
+    },
+    "L3": {
+      "reported_bytes": 8388608,
+      "nearest_knee": {
+        "before_bytes": 4194304,
+        "after_bytes": 6291456,
+        "ratio_p10": 1.977
+      },
+      "octaves_away": 0.708,
+      "matches": false
+    }
+  },
+  "summary": {
+    "l1_ns": 1.346,
+    "l2_ns": 3.788,
+    "l3_ns": 12.126,
+    "dram_ns": 127.403
+  },
+  "source_csv": "reports/latency_e080fed1753e.csv"
+}
