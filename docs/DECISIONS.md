@@ -139,3 +139,79 @@ Each entry: **decision** — alternatives considered — reason.
 27. **Missing cpufreq leaves `loaded_cpu_mhz` as `null`.** — Alternative: fall back to `cpu MHz`
     from `/proc/cpuinfo`. — In VMs that field is a static TSC value, not the real clock; reporting
     it as a "loaded frequency" would be fabricated precision.
+
+28. **During `--with-probe`, the collector process moves off CPU 0's whole physical core**
+    (CPU 0 and its SMT siblings). — Alternatives: leave it unpinned, or just avoid CPU 0. —
+    Measured: unpinned → L1 1.79 ns; off CPU 0 only → 1.71 ns (CPU 1 is CPU 0's hyperthread);
+    off the whole core → 1.30 ns, matching the standalone probe.
+
+## Phase 4 — simulated fleet and validator
+
+29. **The simulator draws "true" host metrics, then renders 3 probe samples per metric and
+    reports their mean; the validator uses the median of the samples.** — Alternative: emit a
+    single value per metric. — This is how the spec's "single-measurement glitches" can test
+    robustness: a naive validator using the reported mean would flag glitched healthy hosts. The
+    `samples` field is optional in schema v1, so real collector snapshots stay valid.
+
+30. **SKU frequencies and temperatures are documented assumptions.** sku-a uses the dev CPU's
+    published 4.2 GHz max / 3.8 GHz all-core turbo. — cpufreq and thermal sensors don't exist in
+    WSL2, so there's nothing real to seed them from; the README labels them as assumptions.
+
+31. **sku-b/sku-c perf = sku-a × fixed ratios** (sku-b: L3 ×1.6, DRAM ×1.2, bandwidth ×0.85;
+    sku-c: L3 ×1.25, DRAM ×1.05, bandwidth ×1.25). — Alternative: invent absolute numbers. —
+    Ratios keep every SKU traceable to the one real measurement; the reasoning for each is in
+    `DERIVED_SKUS`.
+
+32. **Thermal throttling scales L1/L2 ns by 1/clock-ratio, and L3 by about half that.** — A
+    fault that only changed frequency would be physically inconsistent: cache latency is fixed in
+    cycles.
+
+33. **Simulated snapshots mark `memory.dimms` as unavailable** ("agent runs unprivileged"). —
+    Alternative: include rated vs configured DIMM speed. — Fleet agents often run without root;
+    and it makes MEMORY_CONFIG_SLOW a perf-pattern diagnosis rather than a trivial field lookup.
+
+34. **The IF features are signed robust z-scores clipped at 0, plus a composite slowdown score.**
+    — Alternative: raw metrics. — Raw metrics differ by SKU and scale; z-scores make features
+    comparable. Clipping stops "faster than siblings" from looking anomalous. The composite score
+    is what makes a 5–8 % multi-metric shift visible.
+
+35. **Isolation Forest uses `max_samples = min(64, n)` for every SKU and fleet size.** — The
+    default (`min(256, n)`) changes the score normalisation between a 1000-host tuning fleet and
+    a 200-host test fleet, so a tuned threshold would not transfer. Decided on dev seeds, before
+    any held-out result was seen.
+
+36. **The tuning fleet (seed 1) has 1000 hosts; the held-out fleets have 200.** — Alternative:
+    tune on 200 hosts. — With 200 hosts seed 1 had only 2 SUBTLE examples, and every IF threshold
+    from 0.62 to 0.71 tied. The spec fixes *which seed* is used for tuning, not its size; test
+    fleets keep the spec's 200 hosts.
+
+37. **Tuning = per-rule-group grid search; ties resolved toward the centre of the tied
+    region.** CE thresholds maximise CE-rule F1; thermal thresholds maximise thermal-rule F1; the
+    IF threshold maximises combined detection F1. — Alternative: one joint grid. — The groups are
+    independent and the IF scores don't depend on rule thresholds, so per-group search is
+    exhaustive and fast. Centre-of-ties leaves margin on both sides.
+
+38. **Attribution "explains away".** UE subsumes CE activity on the same host; throttling
+    subsumes slow caches. A DRAM slowdown beyond what throttling can cause (bandwidth z ≥ 6) is
+    still reported as a second fault. — Without this, every UE host would also be blamed for CE
+    degradation, and every thermal host for a perf anomaly.
+
+39. **Severity: `critical` only for MEMORY_UE; everything else is `warning`.** — Alternative:
+    severity from magnitude. — UEs crash workloads or corrupt data today; the others degrade
+    performance or predict future failure. The triage report sorts within a severity by magnitude.
+
+40. **Evaluation adds nine extra held-out seeds (3–11) beside the spec's seed 2.** — A 200-host
+    fleet has only 3–7 hosts per fault type, so a single seed's per-type recall moves in steps of
+    15–30 %. Mean ± sd over ten fleets shows how stable the headline is.
+
+41. **Confusion-matrix convention:** one entry per (host, true fault). The column is that fault
+    if it was predicted, otherwise the host's primary predicted cause, otherwise `NOT_FLAGGED`.
+    — This handles multi-fault hosts without double-counting healthy hosts.
+
+42. **Development used dev seeds 101+ only; seeds 1–11 were generated only by `make fleet`.**
+    — This keeps the held-out numbers honest: the first time held-out results were computed was
+    the final `make fleet evaluate` run.
+
+43. **Single-host health report: ±15 % tolerance against the sku-a reference.** — With one
+    machine there is no fleet distribution for z-scores. Checks that need missing interfaces are
+    reported as "not evaluated" with the reason, never as "pass".

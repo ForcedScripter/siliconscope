@@ -1,0 +1,119 @@
+{
+  "test_seed_dir": "data/fleet_2",
+  "thresholds": {
+    "ce_slope_per_day": 0.5,
+    "ce_total": 10,
+    "temp_c": 86.0,
+    "freq_ratio": 0.9,
+    "z_abs": 4.0,
+    "if_score": 0.59
+  },
+  "rules_detection": {
+    "precision": 1.0,
+    "recall": 0.862,
+    "f1": 0.926,
+    "tp": 25,
+    "fp": 0,
+    "fn": 4
+  },
+  "ml_detection": {
+    "precision": 1.0,
+    "recall": 0.448,
+    "f1": 0.619,
+    "tp": 13,
+    "fp": 0,
+    "fn": 16
+  },
+  "combined_detection": {
+    "precision": 1.0,
+    "recall": 0.931,
+    "f1": 0.964,
+    "tp": 27,
+    "fp": 0,
+    "fn": 2
+  },
+  "root_cause": {
+    "tp_hosts": 27,
+    "exact_set_accuracy": 1.0,
+    "primary_accuracy": 1.0
+  },
+  "per_type": {
+    "MEMORY_ECC_DEGRADATION": {
+      "n": 3,
+      "detect_recall": 1.0,
+      "cause": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 3,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "MEMORY_UE": {
+      "n": 5,
+      "detect_recall": 1.0,
+      "cause": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 5,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "PCIE_LINK_DOWNTRAIN": {
+      "n": 6,
+      "detect_recall": 1.0,
+      "cause": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 6,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "THERMAL_THROTTLING": {
+      "n": 7,
+      "detect_recall": 1.0,
+      "cause": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 7,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "MEMORY_CONFIG_SLOW": {
+      "n": 3,
+      "detect_recall": 1.0,
+      "cause": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 3,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "SUBTLE_PERF_DEGRADATION": {
+      "n": 5,
+      "detect_recall": 0.6,
+      "cause": {
+        "precision": 1.0,
+        "recall": 0.6,
+        "f1": 0.75,
+        "tp": 3,
+        "fp": 0,
+        "fn": 2
+      }
+    }
+  },
+  "robust_f1_mean": {
+    "rules": 0.91,
+    "ml": 0.665,
+    "combined": 0.963
+  }
+}

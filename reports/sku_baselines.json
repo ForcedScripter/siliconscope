@@ -1,0 +1,59 @@
+{
+  "sku-a": {
+    "l1_ns": 1.302,
+    "l2_ns": 4.744,
+    "l3_ns": 14.05,
+    "dram_ns": 94.052,
+    "read_gbps": 13.73,
+    "rated_mhz": 4200.0,
+    "loaded_mhz": 3800.0,
+    "loaded_temp_c": 72.0,
+    "cache": {
+      "L1": 49152,
+      "L2": 1310720,
+      "L3": 8388608
+    },
+    "cores": 4,
+    "threads": 8,
+    "sockets": 1,
+    "provenance": "perf measured on dev machine (reports/latency_levels.json, reports/bandwidth_summary.json); freq/temp assumed"
+  },
+  "sku-b": {
+    "l1_ns": 1.432,
+    "l2_ns": 5.456,
+    "l3_ns": 22.48,
+    "dram_ns": 112.862,
+    "read_gbps": 11.671,
+    "rated_mhz": 3500.0,
+    "loaded_mhz": 3000.0,
+    "loaded_temp_c": 76.0,
+    "cache": {
+      "L1": 49152,
+      "L2": 2097152,
+      "L3": 62914560
+    },
+    "cores": 32,
+    "threads": 64,
+    "sockets": 2,
+    "provenance": "SIMULATED: sku-a x {'l1_ns': 1.1, 'l2_ns': 1.15, 'l3_ns': 1.6, 'dram_ns': 1.2, 'read_gbps': 0.85}; freq/temp assumed"
+  },
+  "sku-c": {
+    "l1_ns": 1.237,
+    "l2_ns": 4.744,
+    "l3_ns": 17.562,
+    "dram_ns": 98.755,
+    "read_gbps": 17.163,
+    "rated_mhz": 3800.0,
+    "loaded_mhz": 3400.0,
+    "loaded_temp_c": 68.0,
+    "cache": {
+      "L1": 32768,
+      "L2": 1048576,
+      "L3": 33554432
+    },
+    "cores": 24,
+    "threads": 48,
+    "sockets": 1,
+    "provenance": "SIMULATED: sku-a x {'l1_ns': 0.95, 'l2_ns': 1.0, 'l3_ns': 1.25, 'dram_ns': 1.05, 'read_gbps': 1.25}; freq/temp assumed"
+  }
+}

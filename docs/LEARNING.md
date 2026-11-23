@@ -21,6 +21,12 @@ numbers are always labelled SIMULATED.
 11. [ECC: correctable vs uncorrectable errors](#11-ecc-correctable-vs-uncorrectable-errors)
 12. [PCIe link training and downtraining](#12-pcie-link-training-and-downtraining)
 13. [Thermal throttling and DIMM speed](#13-thermal-throttling-and-dimm-speed)
+14. [The simulated fleet](#14-the-simulated-fleet)
+15. [Robust z-score (median / MAD)](#15-robust-z-score-median--mad)
+16. [Isolation Forest](#16-isolation-forest)
+17. [Root-cause attribution](#17-root-cause-attribution)
+18. [Precision, recall, F1 and the confusion matrix](#18-precision-recall-f1-and-the-confusion-matrix)
+19. [Held-out evaluation and ablation](#19-held-out-evaluation-and-ablation)
 
 <!-- PHASE2+ sections are appended below as they are built. -->
 
@@ -389,6 +395,18 @@ runs quick probes (~15 s) while a background thread samples frequency and
 temperature every 0.5 s. That gives **under-load** values, which is where
 thermal throttling shows (idle readings look fine).
 
+**A measurement-hygiene bug we found and fixed.** The first `--with-probe` run
+reported L1 at 1.79 ns, against 1.30 ns in the canonical run and 1.2–1.35 ns
+when the probe ran alone. Cause: the collector's own Python process, with its
+sampler thread, was being scheduled next to the probe.
+
+- Moving it off CPU 0 only got L1 to 1.71 ns, because CPU 1 is CPU 0's **SMT
+  sibling**: same physical core, same L1, shared execution units.
+- Moving it off CPU 0's *whole physical core* (`thread_siblings_list`) gave
+  **1.30 ns**.
+
+Lesson: a measurement agent must stay off the core it is measuring.
+
 **The hostname is never stored.** `host_id` = first 12 hex characters of
 SHA-256(hostname). Hostnames often encode datacenter, rack or team names.
 
@@ -460,3 +478,153 @@ errors. `dmidecode -t memory` shows both `Speed` (rated) and `Configured
 Memory Speed`. Running at 2933 instead of 3200 MT/s costs ~8 % bandwidth;
 dropping a full speed bin costs more, and raises latency. The collector flags
 `below_rated_speed` per DIMM ([`collector/readers/memory.py`](../collector/readers/memory.py)).
+
+## 14. The simulated fleet
+
+We have one real machine, but fleet tooling needs hundreds of machines, with
+**known** faults so we can score the tooling. So
+[`fleet/simulator.py`](../fleet/simulator.py) generates **SIMULATED** servers
+in exactly the collector's snapshot schema (a test checks every one validates):
+
+1. **3 SKUs.** `sku-a`'s perf baseline is the *real* measurement from
+   `reports/` (L1 1.30, L2 4.74, L3 14.05, DRAM 94.05 ns; single-thread DRAM
+   read 13.73 GB/s). `sku-b` and `sku-c` are derived with documented ratios.
+   Frequencies and temperatures can't be measured in WSL2, so they are
+   labelled assumptions.
+2. **Healthy variation.** 2.5 % Gaussian part-to-part variation on perf,
+   1.5 % on loaded frequency, ±3 °C on temperature. CE counts are mostly 0,
+   with 12 % of hosts showing one isolated day of 1–2 CEs.
+3. **Faults** ([`fleet/faults.py`](../fleet/faults.py)), one function per type,
+   each documenting its real-world cause. 12 % of hosts are faulty, and 5 % of
+   those get two faults. Thermal throttling is **physically consistent**: L1/L2
+   latency is fixed in cycles, so in ns it scales with 1/clock.
+4. **Measurement.** The probe reports 3 samples per metric (1 % run-to-run
+   noise) and their *mean*. 3 % of hosts get one **glitched** sample (latency
+   ×1.3–1.8 or bandwidth ×0.5–0.75), imitating the real glitch in
+   `reports/glitch/`. The validator uses the **median** of the samples, so one
+   bad run can't flag a healthy host (`test_glitched_sample_does_not_flag_healthy_host`).
+5. **Ground truth** goes to a separate `ground_truth.csv`. The validator never
+   reads it, and a test checks the validator's code never even names it.
+
+Everything comes from one seeded `numpy.random.Generator`, so a seed
+reproduces a fleet bit-for-bit (`test_same_seed_same_fleet`).
+
+## 15. Robust z-score (median / MAD)
+
+A z-score says how unusual a value is: `z = (x − mean) / std`. But in a fleet
+the faulty hosts we're hunting *pull the mean toward themselves and inflate
+the std*, which hides them. The robust version swaps in outlier-resistant
+statistics:
+
+```
+z = (x − median) / (1.4826 × MAD),   MAD = median(|x − median|)
+```
+
+The factor 1.4826 makes `1.4826 × MAD` equal the standard deviation for
+Gaussian data, so |z| > 4 means roughly "4 sigma". One host with 5× the
+latency barely moves the median, and its own z becomes huge
+(`test_robust_z_ignores_outliers`).
+
+We compute it **per SKU**, because 100 ns DRAM is normal for one SKU and
+alarming for another. We also sign it so that **positive = worse**: latency up,
+bandwidth or frequency down. Where: `robust_z` and `add_fleet_stats` in
+[`fleet/validator.py`](../fleet/validator.py); the rule is `rule_perf_zscore` in
+[`fleet/rules.py`](../fleet/rules.py).
+
+## 16. Isolation Forest
+
+An unsupervised anomaly detector (no labels needed). It builds many random
+trees; each split picks a random feature and a random cut value. **Anomalies
+are easy to isolate**: a point far from the crowd ends up alone after only a
+few splits, while a typical point needs many. Its anomaly score is based on
+the average path length to isolate a point, normalised so that ~0.5 is
+ordinary and closer to 1 is anomalous.
+
+Why we need it: `SUBTLE_PERF_DEGRADATION` shifts 3–4 metrics by 5–8 % each.
+With ~2.5 % noise, that is only ~2–3 σ per metric, below the |z| > 4 rule.
+But *several metrics bad at once* is rare for a healthy host. The forest sees
+all features jointly.
+
+Our feature choices ([`fleet/validator.py`](../fleet/validator.py) `ml_scores`):
+
+- Signed robust z-scores for L1/L2/L3/DRAM latency, bandwidth and loaded
+  frequency, **clipped at 0**, because being *faster* than your siblings isn't
+  a fault.
+- A **composite slowdown** = the mean of the positive perf z-scores. This one
+  feature turns "several small shifts" into one large value.
+- One forest **per SKU**, with a fixed subsample size (64), so scores mean the
+  same thing on a 1000-host tuning fleet and a 200-host test fleet.
+
+## 17. Root-cause attribution
+
+Detection ("this host is bad") isn't enough. On-call needs "*why*, and what do
+I do". `attribute()` in [`fleet/validator.py`](../fleet/validator.py) maps
+findings to one of 6 causes or `UNKNOWN_PERF_ANOMALY`:
+
+- **Deterministic rules name their cause directly**: UE → `MEMORY_UE`
+  (critical); CE trend → `MEMORY_ECC_DEGRADATION`; link < max →
+  `PCIE_LINK_DOWNTRAIN`; hot *and* slow → `THERMAL_THROTTLING`.
+- **Perf anomalies are named by their pattern** (`classify_perf_pattern`):
+  - clock low and L1/L2 slow → thermal;
+  - DRAM latency + bandwidth bad while the caches are normal →
+    `MEMORY_CONFIG_SLOW`;
+  - ≥ 2 metrics mildly worse → `SUBTLE_PERF_DEGRADATION`;
+  - anything else → unknown.
+- **Explaining away.** CEs on a host with UEs are evidence for the UE, not a
+  second cause. Throttling explains slow caches, so they don't add a perf
+  cause. But a DRAM slowdown much larger than throttling can cause (bandwidth
+  z ≥ 6) is reported as a second, memory fault.
+- Each cause carries a **recommended action** (`ACTIONS`): replace the DIMM and
+  run memtester; reseat the card and retrain the link; check fans; verify DIMM
+  speed in BIOS/SPD; diff the firmware against the golden config.
+
+## 18. Precision, recall, F1 and the confusion matrix
+
+For "is this host faulty?":
+
+- **Precision** = TP / (TP + FP): of the hosts we flagged, how many were
+  really faulty. Low precision means wasted technician time and drained
+  healthy capacity.
+- **Recall** = TP / (TP + FN): of the faulty hosts, how many we caught. Low
+  recall means silent data corruption and slow jobs stay in production.
+- **F1** = 2PR / (P + R): one number that is high only if both are.
+
+We also report, per fault type, the *detection* recall (flagged for any
+reason) and the *cause* precision/recall (named correctly). The **confusion
+matrix** (true fault × predicted cause) shows *which* mistakes happen. In
+[`reports/confusion_matrix.png`](../reports/confusion_matrix.png) the only
+errors are SUBTLE hosts that were not flagged at all.
+
+## 19. Held-out evaluation and ablation
+
+If you tune thresholds on a dataset and then report results on *the same*
+dataset, the numbers are optimistic: the thresholds have fitted that data's
+quirks. So [`fleet/evaluate.py`](../fleet/evaluate.py) separates:
+
+- **Dev seeds (101+)**: used while writing the code. Never reported.
+- **Seed 1 (tuning)**: thresholds grid-searched here only, then frozen in
+  [`reports/thresholds.json`](../reports/thresholds.json). It has 1000 hosts,
+  because with 200 hosts there were only 2 SUBTLE examples and the threshold
+  search was choosing between ties.
+- **Seed 2 (held-out test, 200 hosts)**: the headline numbers.
+- **Seeds 3–11**: nine more held-out fleets to show variance. One 200-host
+  fleet has only ~3–7 hosts per fault type, so per-type numbers from a single
+  seed are noisy.
+
+**Ablation** = turning parts off to see what each contributes: rules only, ML
+only, and combined. Results ([`reports/evaluation.md`](../reports/evaluation.md)):
+
+| Stages (held-out seed 2) | Precision | Recall | F1 |
+|---|---:|---:|---:|
+| rules only | 1.000 | 0.862 | 0.926 |
+| ML only | 1.000 | 0.448 | 0.619 |
+| combined | 1.000 | 0.931 | 0.964 |
+
+Across seeds 3–11, combined F1 is 0.963 ± 0.022. Pooled over those seeds:
+
+- **SUBTLE_PERF_DEGRADATION:** recall 0.833 for ML only vs 0.333 for rules
+  only. The ML stage catches what the rules can't.
+- **UE, ECC degradation and PCIe downtraining:** rules only 1.000 vs ML only
+  ≤ 0.06. Faults with no perf signature need rules.
+
+That's why the two stages are combined.

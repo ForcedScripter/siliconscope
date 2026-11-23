@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "host_id": "e080fed1753e",
-  "collected_at": "2026-11-23T12:54:48+00:00",
+  "collected_at": "2026-11-23T13:12:15+00:00",
   "source": "collector",
   "sku": null,
   "platform": {
@@ -76,8 +76,8 @@
   },
   "memory": {
     "available": true,
-    "mem_total_bytes": 3990999040,
-    "mem_available_bytes": 3480784896,
+    "mem_total_bytes": 3990990848,
+    "mem_available_bytes": 3476926464,
     "dimms": {
       "available": false,
       "reason": "dmidecode needs root (run the collector with sudo for DIMM info)"
@@ -147,15 +147,15 @@
   "probe": {
     "available": true,
     "mode": "quick",
-    "l1_ns": 1.792,
-    "l2_ns": 4.751,
-    "l3_ns": 13.096,
-    "dram_ns": 99.026,
-    "read_gbps": 16.56,
-    "peak_read_gbps": 92.67,
+    "l1_ns": 1.301,
+    "l2_ns": 3.683,
+    "l3_ns": 15.052,
+    "dram_ns": 94.794,
+    "read_gbps": 15.98,
+    "peak_read_gbps": 93.34,
     "loaded_cpu_mhz": null,
     "loaded_max_temp_c": null,
     "load_samples": 0,
-    "ran_at": "2026-11-23T12:54:48Z"
+    "ran_at": "2026-11-23T13:12:15Z"
   }
 }

@@ -44,14 +44,33 @@ collect:
 	$(MAKE) -C probe
 	$(PYTHON) -m collector.collector --out reports/snapshot_$(HOST_ID).json --with-probe
 
+# SIMULATED fleets: seed 1 = tuning, seed 2 = held-out test, 3..11 = robustness.
+FLEET_N     ?= 200
+# The tuning fleet (seed 1) is larger so each fault type has ~20 examples to tune on;
+# the held-out fleets keep the spec's 200 hosts. See docs/DECISIONS.md.
+TUNE_N      ?= 1000
+FAULT_RATE  ?= 0.12
+TEST_SEEDS  ?= 2 3 4 5 6 7 8 9 10 11
+DATA        ?= data
+
+# Simulate all fleets, tune thresholds on seed 1 ONLY, then triage held-out seed 2.
 fleet:
-	@echo "fleet: not implemented yet (phase 4)"
+	$(PYTHON) -m fleet.simulator --n $(TUNE_N) --fault-rate $(FAULT_RATE) --seed 1 \
+		--out-dir $(DATA)/fleet_1 --write-baselines
+	for s in $(TEST_SEEDS); do \
+		$(PYTHON) -m fleet.simulator --n $(FLEET_N) --fault-rate $(FAULT_RATE) --seed $$s \
+			--out-dir $(DATA)/fleet_$$s || exit 1; \
+	done
+	$(PYTHON) -m fleet.evaluate --tune --data $(DATA)
+	$(PYTHON) -m fleet.validator --fleet-dir $(DATA)/fleet_2
 
+# Score the validator on held-out seed 2 (+ robustness seeds); ablations; confusion matrix.
 evaluate:
-	@echo "evaluate: not implemented yet (phase 4)"
+	$(PYTHON) -m fleet.evaluate --data $(DATA) --robust-seeds $(filter-out 2,$(TEST_SEEDS))
 
+# Single-machine health report from the real snapshot written by `make collect`.
 report:
-	@echo "report: not implemented yet (phase 4)"
+	$(PYTHON) -m fleet.validator --snapshot reports/snapshot_$(HOST_ID).json
 
 lint:
 	$(PYTHON) -m ruff check .

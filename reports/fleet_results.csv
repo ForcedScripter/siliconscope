@@ -1,0 +1,201 @@
+host_id,sku,flagged,severity,primary_cause,causes,action,evidence,rules_fired,ml_flag,if_score,magnitude
+5ae29a64d41d,sku-a,True,critical,MEMORY_UE,MEMORY_UE,Drain host; replace the DIMM (EDAC per-DIMM counts identify the slot); run memtester/memtest86 before returning to service.,UE count = 2,ecc_ue,False,0.4473,12.0
+6ea67fe61c27,sku-a,True,critical,MEMORY_UE,MEMORY_UE,Drain host; replace the DIMM (EDAC per-DIMM counts identify the slot); run memtester/memtest86 before returning to service.,UE count = 1,ecc_ue,False,0.4469,11.0
+7cc37cfcd6d6,sku-a,True,critical,MEMORY_UE,MEMORY_UE,Drain host; replace the DIMM (EDAC per-DIMM counts identify the slot); run memtester/memtest86 before returning to service.,UE count = 1,ecc_ue,False,0.4258,11.0
+86e97e172a79,sku-b,True,critical,MEMORY_UE,MEMORY_UE,Drain host; replace the DIMM (EDAC per-DIMM counts identify the slot); run memtester/memtest86 before returning to service.,UE count = 1,ecc_ue,False,0.373,11.0
+b9b3657e3945,sku-a,True,critical,MEMORY_UE,MEMORY_UE,Drain host; replace the DIMM (EDAC per-DIMM counts identify the slot); run memtester/memtest86 before returning to service.,UE count = 1,ecc_ue,False,0.3778,11.0
+a2690b711ff2,sku-a,True,warning,THERMAL_THROTTLING,THERMAL_THROTTLING,"Check fans and fan curves, heatsink seating/paste, airflow and blanking panels; compare with rack inlet temperature.","loaded temp = 95.1 °C (>86.0), loaded freq = 2674 MHz = 0.70x SKU median (<0.9)",perf_robust_z;thermal_throttle,True,0.7927,18.299
+653a29c979cd,sku-a,True,warning,THERMAL_THROTTLING,THERMAL_THROTTLING,"Check fans and fan curves, heatsink seating/paste, airflow and blanking panels; compare with rack inlet temperature.","loaded temp = 95.4 °C (>86.0), loaded freq = 2834 MHz = 0.75x SKU median (<0.9)",perf_robust_z;thermal_throttle,True,0.7526,14.794
+fdece85d1ed6,sku-c,True,warning,THERMAL_THROTTLING,THERMAL_THROTTLING,"Check fans and fan curves, heatsink seating/paste, airflow and blanking panels; compare with rack inlet temperature.","loaded temp = 97.8 °C (>86.0), loaded freq = 2680 MHz = 0.79x SKU median (<0.9)",perf_robust_z;thermal_throttle,True,0.7573,11.751
+00c18b59b356,sku-c,True,warning,MEMORY_CONFIG_SLOW,MEMORY_CONFIG_SLOW,Verify DIMM speed and population in BIOS/SPD (dmidecode 'Configured Memory Speed' vs rated); fix mixed DIMMs.,"read_gbps = 11.53 GB/s vs SKU median 17.25 (robust z = +10.7) ; IsolationForest score 0.720 (>= 0.59); top deviations: read_gbps z=+10.7, dram_ns z=+2.8, l2_ns z=+1.3",perf_robust_z,True,0.7204,11.456
+f9de4463ea7a,sku-c,True,warning,THERMAL_THROTTLING,THERMAL_THROTTLING,"Check fans and fan curves, heatsink seating/paste, airflow and blanking panels; compare with rack inlet temperature.","loaded temp = 96.7 °C (>86.0), loaded freq = 2798 MHz = 0.83x SKU median (<0.9)",perf_robust_z;thermal_throttle,True,0.7588,11.349
+58367b7d78e5,sku-b,True,warning,THERMAL_THROTTLING,THERMAL_THROTTLING,"Check fans and fan curves, heatsink seating/paste, airflow and blanking panels; compare with rack inlet temperature.","loaded temp = 92.8 °C (>86.0), loaded freq = 2417 MHz = 0.81x SKU median (<0.9)",perf_robust_z;thermal_throttle,True,0.8312,10.936
+0a7b3e3dc0f0,sku-a,True,warning,THERMAL_THROTTLING,THERMAL_THROTTLING,"Check fans and fan curves, heatsink seating/paste, airflow and blanking panels; compare with rack inlet temperature.","loaded temp = 93.8 °C (>86.0), loaded freq = 3026 MHz = 0.80x SKU median (<0.9)",perf_robust_z;thermal_throttle,True,0.7432,10.924
+6edf27d78a8d,sku-a,True,warning,THERMAL_THROTTLING,THERMAL_THROTTLING,"Check fans and fan curves, heatsink seating/paste, airflow and blanking panels; compare with rack inlet temperature.","loaded temp = 92.4 °C (>86.0), loaded freq = 3105 MHz = 0.82x SKU median (<0.9)",perf_robust_z;thermal_throttle,True,0.7329,8.827
+0a71e261439b,sku-b,True,warning,MEMORY_CONFIG_SLOW,MEMORY_CONFIG_SLOW,Verify DIMM speed and population in BIOS/SPD (dmidecode 'Configured Memory Speed' vs rated); fix mixed DIMMs.,"dram_ns = 127.46 ns vs SKU median 112.19 (robust z = +4.8) ; read_gbps = 8.79 GB/s vs SKU median 11.60 (robust z = +7.5) ; IsolationForest score 0.730 (>= 0.59); top deviations: read_gbps z=+7.5, dram_ns z=+4.8, l3_ns z=-0.7",perf_robust_z,True,0.7296,8.198
+0591b130ab68,sku-a,True,warning,MEMORY_CONFIG_SLOW,MEMORY_CONFIG_SLOW,Verify DIMM speed and population in BIOS/SPD (dmidecode 'Configured Memory Speed' vs rated); fix mixed DIMMs.,"dram_ns = 107.01 ns vs SKU median 93.89 (robust z = +4.2) ; read_gbps = 10.72 GB/s vs SKU median 13.68 (robust z = +7.0) ; IsolationForest score 0.693 (>= 0.59); top deviations: read_gbps z=+7.0, dram_ns z=+4.2, l2_ns z=+0.7",perf_robust_z,True,0.6927,7.651
+98f0b170e183,sku-b,True,warning,SUBTLE_PERF_DEGRADATION,SUBTLE_PERF_DEGRADATION,Diff BIOS/firmware/microcode against the SKU golden config; run burn-in (stress-ng) and re-probe.,"l2_ns = 6.22 ns vs SKU median 5.40 (robust z = +5.3) ; IsolationForest score 0.665 (>= 0.59); top deviations: l2_ns z=+5.3, l3_ns z=+3.6, dram_ns z=-1.7",perf_robust_z,True,0.6654,5.977
+b91eb5275fa3,sku-a,True,warning,MEMORY_ECC_DEGRADATION,MEMORY_ECC_DEGRADATION,Schedule DIMM replacement; run memtester; watch for UEs until replaced.,"CE slope = +1.58/day (>0.5), 14-day total = 167 (>10?), last 3 days = [19, 17, 20]",ecc_ce_trend,False,0.4331,3.34
+1867570e21a1,sku-a,True,warning,PCIE_LINK_DOWNTRAIN,PCIE_LINK_DOWNTRAIN,"Reseat the card, inspect riser/cable and connector, retrain the link (hot reset / reboot); RMA the card or riser if it persists.",nic 0000-17-00.0: x8 @ 16.0 GT/s (capable of x16 @ 16.0 GT/s),pcie_downtrain,False,0.3787,1.0
+64fa7d8cf497,sku-c,True,warning,PCIE_LINK_DOWNTRAIN,PCIE_LINK_DOWNTRAIN,"Reseat the card, inspect riser/cable and connector, retrain the link (hot reset / reboot); RMA the card or riser if it persists.",nic 0000-17-00.0: x8 @ 16.0 GT/s (capable of x16 @ 16.0 GT/s),pcie_downtrain,False,0.4484,1.0
+94f092c59fdb,sku-c,True,warning,PCIE_LINK_DOWNTRAIN,PCIE_LINK_DOWNTRAIN,"Reseat the card, inspect riser/cable and connector, retrain the link (hot reset / reboot); RMA the card or riser if it persists.",nic 0000-17-00.0: x8 @ 16.0 GT/s (capable of x16 @ 16.0 GT/s),pcie_downtrain,False,0.3881,1.0
+d8d8e86f5b77,sku-c,True,warning,PCIE_LINK_DOWNTRAIN,PCIE_LINK_DOWNTRAIN,"Reseat the card, inspect riser/cable and connector, retrain the link (hot reset / reboot); RMA the card or riser if it persists.",nic 0000-17-00.0: x8 @ 16.0 GT/s (capable of x16 @ 16.0 GT/s),pcie_downtrain,False,0.4024,1.0
+dbec328d41b9,sku-b,True,warning,PCIE_LINK_DOWNTRAIN,PCIE_LINK_DOWNTRAIN,"Reseat the card, inspect riser/cable and connector, retrain the link (hot reset / reboot); RMA the card or riser if it persists.",nic 0000-17-00.0: x8 @ 16.0 GT/s (capable of x16 @ 16.0 GT/s),pcie_downtrain,False,0.3958,1.0
+ebae70773552,sku-a,True,warning,PCIE_LINK_DOWNTRAIN,PCIE_LINK_DOWNTRAIN,"Reseat the card, inspect riser/cable and connector, retrain the link (hot reset / reboot); RMA the card or riser if it persists.",nic 0000-17-00.0: x8 @ 16.0 GT/s (capable of x16 @ 16.0 GT/s),pcie_downtrain,False,0.4038,1.0
+3b5892468684,sku-b,True,warning,MEMORY_ECC_DEGRADATION,MEMORY_ECC_DEGRADATION,Schedule DIMM replacement; run memtester; watch for UEs until replaced.,"CE slope = +0.26/day (>0.5), 14-day total = 34 (>10?), last 3 days = [1, 3, 3]",ecc_ce_trend,False,0.4141,0.68
+3d941a0c7fa4,sku-b,True,warning,MEMORY_ECC_DEGRADATION,MEMORY_ECC_DEGRADATION,Schedule DIMM replacement; run memtester; watch for UEs until replaced.,"CE slope = +0.20/day (>0.5), 14-day total = 33 (>10?), last 3 days = [3, 1, 4]",ecc_ce_trend,False,0.3698,0.66
+36f65d401819,sku-a,True,warning,SUBTLE_PERF_DEGRADATION,SUBTLE_PERF_DEGRADATION,Diff BIOS/firmware/microcode against the SKU golden config; run burn-in (stress-ng) and re-probe.,"IsolationForest score 0.634 (>= 0.59); top deviations: l1_ns z=+3.1, dram_ns z=+2.4, read_gbps z=+2.4",,True,0.634,0.634
+7004f8df163d,sku-a,True,warning,SUBTLE_PERF_DEGRADATION,SUBTLE_PERF_DEGRADATION,Diff BIOS/firmware/microcode against the SKU golden config; run burn-in (stress-ng) and re-probe.,"IsolationForest score 0.631 (>= 0.59); top deviations: l3_ns z=+3.5, l1_ns z=-1.9, l2_ns z=+1.9",,True,0.631,0.631
+00605af95682,sku-a,False,ok,,,,,,False,0.4326,0.0
+0094453a8c46,sku-b,False,ok,,,,,,False,0.3767,0.0
+05086ffce5a9,sku-c,False,ok,,,,,,False,0.4533,0.0
+05f43c48e86f,sku-a,False,ok,,,,,,False,0.3889,0.0
+09a1d49ec6a3,sku-c,False,ok,,,,,,False,0.5168,0.0
+09bb9e1f74e2,sku-b,False,ok,,,,,,False,0.4102,0.0
+0c8082febeb6,sku-c,False,ok,,,,,,False,0.4604,0.0
+0cb79fb795da,sku-b,False,ok,,,,,,False,0.3733,0.0
+0dc511eab2ba,sku-b,False,ok,,,,,,False,0.5085,0.0
+0f15b68de416,sku-b,False,ok,,,,,,False,0.5411,0.0
+122c09f6fdec,sku-b,False,ok,,,,,,False,0.4105,0.0
+15e53ee1799f,sku-a,False,ok,,,,,,False,0.381,0.0
+164c8cf14933,sku-c,False,ok,,,,,,False,0.3557,0.0
+16512b2070fe,sku-a,False,ok,,,,,,False,0.3792,0.0
+18fac92176c4,sku-a,False,ok,,,,,,False,0.4173,0.0
+1a1f9ee19121,sku-b,False,ok,,,,,,False,0.3734,0.0
+1b2d9ab21b9b,sku-a,False,ok,,,,,,False,0.3782,0.0
+1c941657c353,sku-a,False,ok,,,,,,False,0.3807,0.0
+1db406d1a54e,sku-b,False,ok,,,,,,False,0.3756,0.0
+1dc84a31cb74,sku-a,False,ok,,,,,,False,0.3948,0.0
+1ded99bf57e4,sku-b,False,ok,,,,,,False,0.4095,0.0
+1f712a61d967,sku-a,False,ok,,,,,,False,0.371,0.0
+1fbfd5d5b2c8,sku-c,False,ok,,,,,,False,0.4751,0.0
+204c41f7fefb,sku-a,False,ok,,,,,,False,0.379,0.0
+205cc91ab02b,sku-a,False,ok,,,,,,False,0.3688,0.0
+2204bd2d93cc,sku-a,False,ok,,,,,,False,0.4372,0.0
+275c600d525c,sku-a,False,ok,,,,,,False,0.4099,0.0
+27855864f4b0,sku-a,False,ok,,,,,,False,0.4306,0.0
+28313796de4f,sku-a,False,ok,,,,,,False,0.3697,0.0
+285bf3b7790f,sku-a,False,ok,,,,,,False,0.3745,0.0
+29a051da41ed,sku-c,False,ok,,,,,,False,0.3782,0.0
+2a68ab913581,sku-c,False,ok,,,,,,False,0.369,0.0
+2b6bd277d9e9,sku-b,False,ok,,,,,,False,0.4563,0.0
+2de132f50c92,sku-a,False,ok,,,,,,False,0.4182,0.0
+2e815bbed6ed,sku-a,False,ok,,,,,,False,0.3855,0.0
+2fe81248a489,sku-c,False,ok,,,,,,False,0.3683,0.0
+300211b4b53a,sku-a,False,ok,,,,,,False,0.393,0.0
+31f729c25b8d,sku-c,False,ok,,,,,,False,0.4799,0.0
+327c76fb3436,sku-a,False,ok,,,,,,False,0.4668,0.0
+3300155679ca,sku-a,False,ok,,,,,,False,0.5409,0.0
+333a7c49a213,sku-b,False,ok,,,,,,False,0.3716,0.0
+3a725fe1b62f,sku-b,False,ok,,,,,,False,0.4213,0.0
+402406b8454e,sku-a,False,ok,,,,,,False,0.5244,0.0
+406450431dd8,sku-c,False,ok,,,,,,False,0.4041,0.0
+408890166afa,sku-a,False,ok,,,,,,False,0.3711,0.0
+45b94f9dfdc3,sku-c,False,ok,,,,,,False,0.3811,0.0
+474fbd713b61,sku-a,False,ok,,,,,,False,0.3806,0.0
+4786e776a1bb,sku-b,False,ok,,,,,,False,0.3795,0.0
+47d3ad9d8bf7,sku-a,False,ok,,,,,,False,0.4015,0.0
+48ccda03f429,sku-a,False,ok,,,,,,False,0.4022,0.0
+49ab3d28cc56,sku-c,False,ok,,,,,,False,0.4069,0.0
+49f153d2a078,sku-b,False,ok,,,,,,False,0.3855,0.0
+4f79b352d4ad,sku-b,False,ok,,,,,,False,0.3699,0.0
+4fdb6c5f4738,sku-a,False,ok,,,,,,False,0.4171,0.0
+50e63c99ca49,sku-c,False,ok,,,,,,False,0.398,0.0
+5178fe5271fe,sku-a,False,ok,,,,,,False,0.4072,0.0
+51841225db57,sku-a,False,ok,,,,,,False,0.4633,0.0
+521573051c4d,sku-a,False,ok,,,,,,False,0.3731,0.0
+52bd1bddeba4,sku-c,False,ok,,,,,,False,0.3665,0.0
+55a780f4437c,sku-b,False,ok,,,,,,False,0.3799,0.0
+567375f24765,sku-b,False,ok,,,,,,False,0.4619,0.0
+56f8074dc8a2,sku-b,False,ok,,,,,,False,0.4094,0.0
+5a0cb98d32f9,sku-a,False,ok,,,,,,False,0.3972,0.0
+5afc82eae5a2,sku-a,False,ok,,,,,,False,0.3867,0.0
+5b1a2a2422c7,sku-c,False,ok,,,,,,False,0.4795,0.0
+5dec998a6d15,sku-c,False,ok,,,,,,False,0.4839,0.0
+61428626beb6,sku-c,False,ok,,,,,,False,0.3485,0.0
+641876ba09b9,sku-a,False,ok,,,,,,False,0.4082,0.0
+670bfd319c65,sku-c,False,ok,,,,,,False,0.3688,0.0
+67b30d921ac0,sku-a,False,ok,,,,,,False,0.5125,0.0
+69c807c0adc7,sku-a,False,ok,,,,,,False,0.3783,0.0
+6ad0b39d301e,sku-c,False,ok,,,,,,False,0.3625,0.0
+6af07ea00e3b,sku-b,False,ok,,,,,,False,0.4211,0.0
+6bdb33e7cdaf,sku-b,False,ok,,,,,,False,0.4026,0.0
+6d2c070c4453,sku-b,False,ok,,,,,,False,0.4518,0.0
+6d48f44e414e,sku-a,False,ok,,,,,,False,0.426,0.0
+6d97197939e9,sku-a,False,ok,,,,,,False,0.512,0.0
+70cdb1f0b7f2,sku-c,False,ok,,,,,,False,0.3522,0.0
+71c5de594634,sku-b,False,ok,,,,,,False,0.3897,0.0
+73a52538ff20,sku-c,False,ok,,,,,,False,0.3737,0.0
+74cc357c157e,sku-b,False,ok,,,,,,False,0.396,0.0
+750149b1943a,sku-b,False,ok,,,,,,False,0.4151,0.0
+770195d4479a,sku-b,False,ok,,,,,,False,0.4731,0.0
+7719645d629a,sku-a,False,ok,,,,,,False,0.3875,0.0
+797188bd89f1,sku-a,False,ok,,,,,,False,0.3688,0.0
+79e842bf3e46,sku-c,False,ok,,,,,,False,0.3734,0.0
+7a98ae489d86,sku-c,False,ok,,,,,,False,0.4833,0.0
+7b6808cf343b,sku-c,False,ok,,,,,,False,0.3657,0.0
+7bc3176af682,sku-c,False,ok,,,,,,False,0.4595,0.0
+7c43f9f14d16,sku-a,False,ok,,,,,,False,0.4593,0.0
+877f09fa3651,sku-b,False,ok,,,,,,False,0.4233,0.0
+87c54b909c66,sku-c,False,ok,,,,,,False,0.4417,0.0
+87c94a72c82f,sku-a,False,ok,,,,,,False,0.5272,0.0
+8b9180fd1220,sku-b,False,ok,,,,,,False,0.3907,0.0
+8ba7d43a3824,sku-b,False,ok,,,,,,False,0.4617,0.0
+8d3e070ca04d,sku-b,False,ok,,,,,,False,0.5704,0.0
+8f057b1dff71,sku-b,False,ok,,,,,,False,0.4529,0.0
+93403fab17a8,sku-a,False,ok,,,,,,False,0.4548,0.0
+938c89743c4e,sku-b,False,ok,,,,,,False,0.4553,0.0
+946a849df6f3,sku-a,False,ok,,,,,,False,0.3715,0.0
+957363d8cc93,sku-a,False,ok,,,,,,False,0.3742,0.0
+95fd59a5e351,sku-b,False,ok,,,,,,False,0.4456,0.0
+96ace8b84de9,sku-a,False,ok,,,,,,False,0.4951,0.0
+98027b7bd572,sku-a,False,ok,,,,,,False,0.3933,0.0
+99d515eafb61,sku-a,False,ok,,,,,,False,0.3702,0.0
+9c55b0c4e363,sku-b,False,ok,,,,,,False,0.46,0.0
+9c5c6b02916e,sku-a,False,ok,,,,,,False,0.3882,0.0
+a1bf2c5ce5f0,sku-a,False,ok,,,,,,False,0.4897,0.0
+a2c4babe476f,sku-b,False,ok,,,,,,False,0.3675,0.0
+a599bcd660ca,sku-a,False,ok,,,,,,False,0.3853,0.0
+a60715bd6a04,sku-b,False,ok,,,,,,False,0.4521,0.0
+a79c381c8983,sku-c,False,ok,,,,,,False,0.37,0.0
+a7aa6a200598,sku-b,False,ok,,,,,,False,0.5241,0.0
+a7e3d32bc990,sku-c,False,ok,,,,,,False,0.3968,0.0
+a994a4fac25d,sku-a,False,ok,,,,,,False,0.4476,0.0
+abe28904e25f,sku-c,False,ok,,,,,,False,0.545,0.0
+ae1512dc4f23,sku-a,False,ok,,,,,,False,0.447,0.0
+ae261683dd10,sku-a,False,ok,,,,,,False,0.4809,0.0
+b1e121bb9ea1,sku-a,False,ok,,,,,,False,0.388,0.0
+b2eecd265076,sku-a,False,ok,,,,,,False,0.4247,0.0
+b343108af942,sku-a,False,ok,,,,,,False,0.4848,0.0
+b49512ae9e9e,sku-a,False,ok,,,,,,False,0.4024,0.0
+b7929fe76bb6,sku-a,False,ok,,,,,,False,0.3805,0.0
+b88df2dabe33,sku-b,False,ok,,,,,,False,0.3917,0.0
+b9f8c655c3a3,sku-a,False,ok,,,,,,False,0.3809,0.0
+bca5d36f0f86,sku-a,False,ok,,,,,,False,0.375,0.0
+bd749779cdfb,sku-a,False,ok,,,,,,False,0.3758,0.0
+bd8b7cfe0ca5,sku-c,False,ok,,,,,,False,0.3508,0.0
+bdbfd646fc71,sku-a,False,ok,,,,,,False,0.5059,0.0
+c136b13d3333,sku-c,False,ok,,,,,,False,0.3731,0.0
+c15ed3cc5d28,sku-b,False,ok,,,,,,False,0.3736,0.0
+c24bc70fce2f,sku-b,False,ok,,,,,,False,0.4434,0.0
+c39e6e4ebb2e,sku-a,False,ok,,,,,,False,0.3778,0.0
+c66e36ce3e08,sku-b,False,ok,,,,,,False,0.3776,0.0
+c867475a1687,sku-b,False,ok,,,,,,False,0.4384,0.0
+cbad6bcb26cf,sku-b,False,ok,,,,,,False,0.3924,0.0
+cc2fa7e1ba31,sku-c,False,ok,,,,,,False,0.4208,0.0
+cc9ed273582b,sku-b,False,ok,,,,,,False,0.3897,0.0
+cca2d29dbb58,sku-b,False,ok,,,,,,False,0.4872,0.0
+cdb1527bae31,sku-a,False,ok,,,,,,False,0.5455,0.0
+ce5f5e018aaa,sku-b,False,ok,,,,,,False,0.3917,0.0
+d06247682b1b,sku-a,False,ok,,,,,,False,0.4102,0.0
+d0ad32747319,sku-a,False,ok,,,,,,False,0.3763,0.0
+d195c4078060,sku-b,False,ok,,,,,,False,0.4238,0.0
+d7114ae91397,sku-a,False,ok,,,,,,False,0.4305,0.0
+d77d39b04ca2,sku-a,False,ok,,,,,,False,0.3701,0.0
+d8ee7041483f,sku-a,False,ok,,,,,,False,0.3921,0.0
+d9b89b8dedeb,sku-b,False,ok,,,,,,False,0.4022,0.0
+dadf140f72b1,sku-a,False,ok,,,,,,False,0.3864,0.0
+db28e28096da,sku-b,False,ok,,,,,,False,0.3827,0.0
+dcdb8ee6b951,sku-b,False,ok,,,,,,False,0.3807,0.0
+dedb473cbb57,sku-a,False,ok,,,,,,False,0.3999,0.0
+dee4b7df88bf,sku-c,False,ok,,,,,,False,0.3608,0.0
+df6e2a5227d5,sku-b,False,ok,,,,,,False,0.4607,0.0
+e04fe9ef38f9,sku-a,False,ok,,,,,,False,0.4051,0.0
+e09aa7370005,sku-b,False,ok,,,,,,False,0.4037,0.0
+e2a29b44cab2,sku-b,False,ok,,,,,,False,0.3893,0.0
+e39b14634515,sku-a,False,ok,,,,,,False,0.384,0.0
+e5a187c0be19,sku-a,False,ok,,,,,,False,0.3674,0.0
+e852c7716c75,sku-a,False,ok,,,,,,False,0.3753,0.0
+e85a0371c1ec,sku-a,False,ok,,,,,,False,0.42,0.0
+ea5adf32f73e,sku-a,False,ok,,,,,,False,0.4095,0.0
+ea7bdd5c207c,sku-b,False,ok,,,,,,False,0.4374,0.0
+f04c2120447b,sku-b,False,ok,,,,,,False,0.4202,0.0
+f06e0a2cb2bc,sku-c,False,ok,,,,,,False,0.3543,0.0
+f12c9a56d088,sku-b,False,ok,,,,,,False,0.4559,0.0
+f14756c2379d,sku-a,False,ok,,,,,,False,0.4046,0.0
+f1aa36b97f2b,sku-c,False,ok,,,,,,False,0.4006,0.0
+f2c70f567afd,sku-a,False,ok,,,,,,False,0.3922,0.0
+f3225f380c23,sku-a,False,ok,,,,,,False,0.4268,0.0
+f837b65a8fe8,sku-b,False,ok,,,,,,False,0.4496,0.0
+f9467c34c590,sku-a,False,ok,,,,,,False,0.4009,0.0
+f9f8c4bf6394,sku-b,False,ok,,,,,,False,0.3696,0.0
